@@ -10,25 +10,27 @@ import numpy as np
 broker_address="192.168.0.4"
 
 run = 0
-i = 0
+i = 0 
 hasil = 0
-rata = 0
+rata = 0 
 pangkat = 0
 hsp = 0
 hasilp = 0
 hasilr = 0
 pangkathr = 0
 kuadrat = 0
-gaussian = 0
-gaussianp = 0
+distribusi = 0
+standevkuadrat = 0
+standev = 0
+
 flagrun = False
 # End Variable Section
 
 def on_message(client, userdata, message):
-		global run, pangkat, hsp, hasil, hasilp, i, rata, hasilr, pangkathr, kuadrat, flagrun
-		print("Message Received = ",str(message.payload.decode("utf-8")))
+		global run, pangkat, hsp, hasil, hasilp, i, rata, hasilr, pangkathr, standev, flagrun, distribusi, standevkuadrat
+		#print("Message Received = ",str(message.payload.decode("utf-8")))
 		run = float(str((message.payload.decode("utf-8"))))
-		print("Message topic = ",message.topic)
+		#print("Message topic = ",message.topic)
 
 def on_connect(client, obj, flags, rc):
 		print(str(rc))
@@ -55,10 +57,17 @@ while True:
 	hsp = hsp+pangkat
 	hasilr = hasilr+run
 	pangkathr = hasilr*hasilr
-	kuadrat = np.sqrt(pangkathr)
 	i=i+1
 	rata = hasil/i
-	client.publish("/Indonesia/Jawabarat/tes",kuadrat)
+	standevkuadratA = (i*hsp)-pangkathr
+	standevkuadratB = i*(i-1)
+	try:
+		s = standevkuadratA/standevkuadratB
+	except ZeroDivisionError:
+		s = 0
+	standev = np.sqrt(s)
+	distribusi = (run-rata)/standev
+	client.publish("/Indonesia/Jawabarat/tes",distribusi)
 	time.sleep(2)
 	
 client.loop_stop()
